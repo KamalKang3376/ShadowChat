@@ -20,7 +20,7 @@ RUN sed -ri -e 's!/var/www/html!/var/www/html/public!g' \
     /etc/apache2/sites-available/*.conf \
     /etc/apache2/apache2.conf
 
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+RUN COMPOSER_MAX_PARALLEL_HTTP=2 COMPOSER_PROCESS_TIMEOUT=600 composer install --prefer-dist --no-dev --optimize-autoloader --no-interaction
 
 RUN mkdir -p storage/framework/cache/data \
     storage/framework/sessions \
