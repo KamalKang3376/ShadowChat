@@ -8,6 +8,10 @@ RUN apt-get update && apt-get install -y \
     && a2enmod rewrite headers \
     && rm -rf /var/lib/apt/lists/*
 
+RUN if ! getent group 1000 >/dev/null; then \
+        groupadd -g 1000 render-secrets; \
+    fi && usermod -a -G 1000 www-data
+
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
@@ -20,7 +24,10 @@ RUN sed -ri -e 's!/var/www/html!/var/www/html/public!g' \
     /etc/apache2/sites-available/*.conf \
     /etc/apache2/apache2.conf
 
-RUN COMPOSER_MAX_PARALLEL_HTTP=2 COMPOSER_PROCESS_TIMEOUT=600 composer install --prefer-dist --no-dev --optimize-autoloader --no-interaction
+RUN COMPOSER_MAX_PARALLEL_HTTP=2 \
+    COMPOSER_PROCESS_TIMEOUT=600 \
+    composer install --prefer-dist --no-dev \
+    --optimize-autoloader --no-interaction
 
 RUN mkdir -p storage/framework/cache/data \
     storage/framework/sessions \
