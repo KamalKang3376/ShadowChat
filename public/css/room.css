@@ -1,0 +1,356 @@
+.create-room-page {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 50px 20px;
+    background:
+        radial-gradient(
+            circle at 50% 90%,
+            rgba(37, 99, 235, 0.22),
+            transparent 32%
+        ),
+        radial-gradient(
+            circle at 15% 20%,
+            rgba(124, 58, 237, 0.10),
+            transparent 28%
+        ),
+        linear-gradient(
+            rgba(2, 9, 20, 0.40),
+            rgba(2, 9, 20, 0.60)
+        ),
+        url("../images/shadowchat-bg.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    overflow: hidden;
+}
+
+.create-room-page::before {
+    content: "";
+    position: absolute;
+    width: 550px;
+    height: 180px;
+    bottom: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    background: rgba(37, 99, 235, 0.28);
+    filter: blur(40px);
+}
+
+.create-room-page::after {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 1px;
+    bottom: 80px;
+    left: 0;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        #2563eb,
+        #8b5cf6,
+        #2563eb,
+        transparent
+    );
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.7);
+}
+
+.room-back {
+    position: absolute;
+    top: 28px;
+    left: 25px;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 18px;
+    border-radius: 50%;
+    transition: 0.2s ease;
+}
+
+.room-back:hover {
+    color: #8b5cf6;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.create-room-content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 460px;
+    text-align: center;
+}
+
+.create-room-icon {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 22px;
+    background: linear-gradient(
+        135deg,
+        #8b5cf6,
+        #2563eb
+    );
+    color: #ffffff;
+    font-size: 27px;
+    box-shadow:
+        0 0 25px rgba(139, 92, 246, 0.45),
+        0 0 55px rgba(37, 99, 235, 0.25);
+}
+
+.create-room-content h1 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 30px;
+    font-weight: 700;
+}
+
+.create-room-subtitle {
+    margin: 10px 0 28px;
+    color: #94a3b8;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.create-room-card {
+    padding: 8px 18px;
+    margin-bottom: 25px;
+    border: 1px solid rgba(100, 116, 139, 0.35);
+    border-radius: 18px;
+    background: rgba(15, 27, 43, 0.82);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.03),
+        0 15px 45px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(12px);
+}
+
+.room-option {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 18px 5px;
+    text-align: left;
+    border-bottom: 1px solid rgba(100, 116, 139, 0.18);
+}
+
+.room-option:last-child {
+    border-bottom: 0;
+}
+
+.option-icon {
+    width: 43px;
+    height: 43px;
+    min-width: 43px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 13px;
+    background: linear-gradient(
+        135deg,
+        rgba(124, 58, 237, 0.30),
+        rgba(37, 99, 235, 0.25)
+    );
+    color: #8b5cf6;
+    font-size: 17px;
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.12);
+}
+
+.option-content h3 {
+    margin: 0 0 4px;
+    color: #f8fafc;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.option-content p {
+    margin: 0;
+    color: #7f8ea3;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.neon-button {
+    width: 100%;
+    height: 52px;
+    border: 0;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: linear-gradient(
+        90deg,
+        #8b3dff,
+        #2563eb
+    );
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow:
+        0 8px 25px rgba(99, 50, 255, 0.35),
+        0 0 20px rgba(37, 99, 235, 0.15);
+    transition: 0.25s ease;
+}
+
+.neon-button:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 12px 30px rgba(99, 50, 255, 0.45),
+        0 0 30px rgba(37, 99, 235, 0.25);
+}
+
+.neon-button i {
+    font-size: 13px;
+}
+
+.room-bottom-text {
+    margin: 20px 0 0;
+    color: #526176;
+    font-size: 10px;
+    letter-spacing: 0.3px;
+}
+
+@media (max-width: 575px) {
+
+    .create-room-page {
+        padding: 35px 18px;
+    }
+
+    .room-back {
+        top: 20px;
+        left: 18px;
+    }
+
+    .create-room-content {
+        max-width: 390px;
+    }
+
+    .create-room-icon {
+        width: 62px;
+        height: 62px;
+        font-size: 23px;
+        border-radius: 19px;
+    }
+
+    .create-room-content h1 {
+        font-size: 26px;
+    }
+
+    .create-room-subtitle {
+        font-size: 13px;
+    }
+
+    .create-room-card {
+        padding: 5px 15px;
+    }
+
+    .room-option {
+        padding: 16px 2px;
+    }
+
+    .option-icon {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+    }
+}
+
+.join-input-box {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.join-input-box label {
+    display: block;
+    margin-bottom: 8px;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+}
+
+.join-input-box input {
+    width: 100%;
+    height: 55px;
+    padding: 0 18px;
+    border: 1px solid rgba(100, 116, 139, 0.4);
+    border-radius: 14px;
+    outline: none;
+    background: rgba(15, 27, 43, 0.9);
+    color: #ffffff;
+    text-align: center;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: 8px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.join-input-box input::placeholder {
+    color: #475569;
+}
+
+.join-input-box input:focus {
+    border-color: #6366f1;
+    box-shadow:
+        0 0 0 3px rgba(99, 102, 241, 0.10),
+        0 0 20px rgba(99, 102, 241, 0.12);
+}
+.nickname-box {
+    margin-top: 18px;
+}
+
+.input-error {
+    display: block;
+    margin-top: 7px;
+    color: #f87171;
+    font-size: 11px;
+}
+
+.input-error {
+    display: block;
+    margin-top: 7px;
+    color: #f87171;
+    font-size: 11px;
+}
+
+/* Mobile Join Room Input Fix */
+@media (max-width: 576px) {
+    .join-room-container input,
+    .join-room-container .form-control,
+    #nickname,
+    #roomCode {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+        font-size: 14px;
+        letter-spacing: 2px;
+        padding: 12px 10px;
+    }
+
+    .join-room-container,
+    .join-room-container form {
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    #nickname {
+        letter-spacing: 2px;
+    }
+
+    #nickname::placeholder {
+        letter-spacing: 2px;
+        opacity: 1;
+    }
+}

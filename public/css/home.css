@@ -1,0 +1,239 @@
+.welcome-page {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 45px 20px 35px;
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            rgba(2, 9, 20, 0.45),
+            rgba(2, 9, 20, 0.65)
+        ),
+        url("../images/shadowchat-bg.jpg");
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.welcome-page::before {
+    content: "";
+    position: absolute;
+    width: 520px;
+    height: 180px;
+    left: 50%;
+    bottom: -95px;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    background: rgba(37, 99, 235, 0.30);
+    filter: blur(38px);
+}
+
+.welcome-page::after {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 110px;
+    left: 0;
+    bottom: 0;
+    background:
+        radial-gradient(
+            ellipse at center bottom,
+            rgba(37, 99, 235, 0.22),
+            transparent 65%
+        );
+    pointer-events: none;
+}
+
+.welcome-content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.shadow-logo {
+    margin-bottom: 17px;
+}
+
+.logo-bubble {
+    position: relative;
+    width: 82px;
+    height: 70px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 28px;
+    background: linear-gradient(
+        135deg,
+        #a855f7,
+        #6366f1,
+        #06b6d4
+    );
+    color: #07111f;
+    font-size: 32px;
+    box-shadow:
+        0 0 25px rgba(168, 85, 247, 0.45),
+        0 0 50px rgba(37, 99, 235, 0.25);
+}
+
+.logo-bubble::after {
+    content: "";
+    position: absolute;
+    bottom: -9px;
+    left: 16px;
+    width: 25px;
+    height: 22px;
+    background: #7c3aed;
+    clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+
+.shadow-title {
+    margin: 0;
+    color: #f8fafc;
+    font-size: 36px;
+    line-height: 1.1;
+    font-weight: 700;
+    letter-spacing: -1px;
+}
+
+.shadow-title span {
+    background: linear-gradient(
+        90deg,
+        #a855f7,
+        #6366f1,
+        #3b82f6
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.shadow-tagline {
+    margin: 7px 0 0;
+    color: #e2e8f0;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.shadow-description {
+    margin: 25px 0 26px;
+    color: #9aa9bd;
+    font-size: 13px;
+    line-height: 1.75;
+}
+
+.security-features {
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+    width: 100%;
+    max-width: 280px;
+    margin: 0 auto 30px;
+}
+
+.security-item {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    text-align: left;
+}
+
+.security-icon {
+    width: 35px;
+    height: 35px;
+    min-width: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: rgba(59, 130, 246, 0.12);
+    border: 1px solid rgba(99, 102, 241, 0.20);
+    color: #60a5fa;
+    font-size: 14px;
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.08);
+}
+
+.security-item span {
+    color: #d1d9e6;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.get-started-btn {
+    width: 100%;
+    height: 53px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border-radius: 16px;
+    background: linear-gradient(
+        90deg,
+        #a238ff,
+        #6366f1,
+        #1677ff
+    );
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow:
+        0 10px 30px rgba(99, 50, 255, 0.35),
+        0 0 25px rgba(37, 99, 235, 0.15);
+    transition: 0.25s ease;
+}
+
+.get-started-btn:hover {
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow:
+        0 14px 35px rgba(99, 50, 255, 0.45),
+        0 0 35px rgba(37, 99, 235, 0.25);
+}
+
+.get-started-btn i {
+    font-size: 13px;
+}
+
+.welcome-bottom-text {
+    margin: 23px 0 0;
+    color: #536276;
+    font-size: 10px;
+    letter-spacing: 0.2px;
+}
+
+@media (max-width: 575px) {
+
+    .welcome-page {
+        padding: 35px 25px 30px;
+    }
+
+    .welcome-content {
+        max-width: 360px;
+    }
+
+    .logo-bubble {
+        width: 72px;
+        height: 62px;
+        font-size: 27px;
+    }
+
+    .shadow-title {
+        font-size: 32px;
+    }
+
+    .shadow-description {
+        font-size: 12px;
+        margin-top: 22px;
+    }
+
+    .security-features {
+        margin-bottom: 27px;
+    }
+}

@@ -1,0 +1,62 @@
+:root {
+    --admin-bg: #f5f7fb;
+    --admin-card: #ffffff;
+    --admin-navbar: #ffffff;
+    --admin-sidebar: #ffffff;
+
+    --admin-border: #e5e7eb;
+
+    --admin-text: #111827;
+    --admin-text-secondary: #6b7280;
+
+    --admin-sidebar-text: #64748b;
+    --admin-sidebar-title: #94a3b8;
+
+    --admin-icon-bg: #f1f5f9;
+    --admin-hover: #f5f3ff;
+
+    --admin-shadow: rgba(15, 23, 42, 0.06);
+}
+
+[data-theme="dark"] {
+    --admin-bg: #0f172a;
+    --admin-card: #1e293b;
+    --admin-navbar: #111827;
+    --admin-sidebar: #111827;
+
+    --admin-border: #334155;
+
+    --admin-text: #f8fafc;
+    --admin-text-secondary: #94a3b8;
+
+    --admin-sidebar-text: #94a3b8;
+    --admin-sidebar-title: #64748b;
+
+    --admin-icon-bg: #273449;
+    --admin-hover: rgba(99, 102, 241, 0.12);
+
+    --admin-shadow: rgba(0, 0, 0, 0.25);
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: var(--admin-bg);
+    color: var(--admin-text);
+    transition:
+        background-color 0.25s ease,
+        color 0.25s ease;
+}
+
+.admin-main {
+    background: var(--admin-bg);
+    transition: background-color 0.25s ease;
+}
+
+.admin-content {
+    color: var(--admin-text);
+}
