@@ -14,40 +14,17 @@ class AttachmentController extends Controller
     private const MAX_FILE_SIZE = 10240;
 
     private const ALLOWED_EXTENSIONS = [
-        'jpg', 'jpeg', 'png', 'gif', 'webp',
-        'pdf', 'txt', 'doc', 'docx', 'xls', 'xlsx',
-    ];
-
-    private const ALLOWED_MIME_TYPES = [
-        'image/jpeg',
-        'image/pjpeg',
-        'image/png',
-        'image/gif',
-        'image/webp',
-        'application/pdf',
-        'text/plain',
-        'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'application/vnd.ms-excel',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    ];
-
-    private const EXTENSION_MIME_TYPES = [
-        'jpg' => ['image/jpeg', 'image/pjpeg'],
-        'jpeg' => ['image/jpeg', 'image/pjpeg'],
-        'png' => ['image/png'],
-        'gif' => ['image/gif'],
-        'webp' => ['image/webp'],
-        'pdf' => ['application/pdf'],
-        'txt' => ['text/plain'],
-        'doc' => ['application/msword'],
-        'docx' => [
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        ],
-        'xls' => ['application/vnd.ms-excel'],
-        'xlsx' => [
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        ],
+        'jpg',
+        'jpeg',
+        'png',
+        'gif',
+        'webp',
+        'pdf',
+        'txt',
+        'doc',
+        'docx',
+        'xls',
+        'xlsx',
     ];
 
     private function supabaseConfig(): array
@@ -81,16 +58,18 @@ class AttachmentController extends Controller
     private function authorizeRoom(
         Request $request,
         string $roomCode
-    ): ?\Illuminate\Http\JsonResponse {
+    ): ?array {
         $room = Room::where('room_code', $roomCode)
             ->where('status', 'active')
             ->where('expires_at', '>', now())
             ->first();
 
         if (! $room) {
-            return response()->json([
-                'message' => 'Room not found or expired.',
-            ], 404);
+            return [
+                'error' => response()->json([
+                    'message' => 'Room not found or expired.',
+                ], 404),
+            ];
         }
 
         $membership = $request->session()->get(
@@ -102,9 +81,11 @@ class AttachmentController extends Controller
             || empty($membership['uid'])
             || empty($membership['nickname'])
         ) {
-            return response()->json([
-                'message' => 'You are not authorized for this room.',
-            ], 403);
+            return [
+                'error' => response()->json([
+                    'message' => 'You are not authorized for this room.',
+                ], 403),
+            ];
         }
 
         return null;
@@ -112,61 +93,23 @@ class AttachmentController extends Controller
 
     private function validateAttachment(
         Request $request
-    ): UploadedFile|\Illuminate\Http\JsonResponse {
-        $file = $request->file('file');
-
-        if (! $file || ! $file->isValid()) {
-            return response()->json([
-                'message' => 'No valid file was received. Please select it again.',
-            ], 422);
-        }
-
-        if ($file->getSize() > self::MAX_FILE_SIZE * 1024) {
-            return response()->json([
-                'message' => 'The maximum attachment size is 10 MB.',
-            ], 422);
-        }
-
-        $extension = strtolower(
-            $file->getClientOriginalExtension()
-        );
-
-        $detectedMime = strtolower(
-            $file->getMimeType() ?? ''
-        );
-
-        // Log diagnostic information without logging file contents.
-        Log::info('ShadowChat attachment diagnostic', [
-            'original_extension' => $extension,
-            'detected_mime' => $detectedMime,
-            'guessed_extension' => $file->guessExtension(),
-            'size' => $file->getSize(),
+    ): UploadedFile {
+        $validated = $request->validate([
+            'file' => [
+                'bail',
+                'required',
+                'file',
+                'max:' . self::MAX_FILE_SIZE,
+                'mimes:' . implode(',', self::ALLOWED_EXTENSIONS),
+            ],
+        ], [
+            'file.required' => 'Please select a file to upload.',
+            'file.file' => 'The uploaded attachment is invalid.',
+            'file.max' => 'The maximum attachment size is 10 MB.',
+            'file.mimes' => 'Unsupported file type. Allowed: JPG, JPEG, PNG, GIF, WebP, PDF, TXT, DOC, DOCX, XLS and XLSX.',
         ]);
 
-        if (! in_array(
-            $extension,
-            self::ALLOWED_EXTENSIONS,
-            true
-        )) {
-            return response()->json([
-                'message' => 'Unsupported extension. Allowed: JPG, JPEG, PNG, GIF, WebP, PDF, TXT, DOC, DOCX, XLS and XLSX.',
-            ], 422);
-        }
-
-        $allowedMimes = self::EXTENSION_MIME_TYPES[$extension] ?? [];
-
-        if (! in_array($detectedMime, $allowedMimes, true)) {
-            Log::warning('ShadowChat attachment MIME mismatch', [
-                'extension' => $extension,
-                'detected_mime' => $detectedMime,
-            ]);
-
-            return response()->json([
-                'message' => 'The file contents do not match the selected file type. Please try another file.',
-            ], 422);
-        }
-
-        return $file;
+        return $validated['file'];
     }
 
     private function getStorageConfig(): ?array
@@ -197,14 +140,10 @@ class AttachmentController extends Controller
         );
 
         if ($authorizationError) {
-            return $authorizationError;
+            return $authorizationError['error'];
         }
 
         $file = $this->validateAttachment($request);
-
-        if (! $file instanceof UploadedFile) {
-            return $file;
-        }
 
         $config = $this->getStorageConfig();
 
@@ -214,22 +153,32 @@ class AttachmentController extends Controller
             ], 503);
         }
 
-        $extension = strtolower(
-            $file->getClientOriginalExtension()
-        );
+        $extension = strtolower($file->guessExtension() ?? '');
 
-        $mimeType = $file->getMimeType()
-            ?: 'application/octet-stream';
+        if (
+            ! $extension
+            || ! in_array(
+                $extension,
+                self::ALLOWED_EXTENSIONS,
+                true
+            )
+        ) {
+            return response()->json([
+                'message' => 'This file type is not supported.',
+            ], 422);
+        }
 
         $path = $roomCode . '/' . Str::uuid()
             . '.' . $extension;
+
+        $mimeType = $file->getMimeType()
+            ?: 'application/octet-stream';
 
         try {
             $response = Http::timeout(30)
                 ->withHeaders([
                     'apikey' => $config['key'],
                     'Authorization' => 'Bearer ' . $config['key'],
-                    'Content-Type' => $mimeType,
                     'x-upsert' => 'false',
                 ])
                 ->withBody(
@@ -278,7 +227,7 @@ class AttachmentController extends Controller
         );
 
         if ($authorizationError) {
-            return $authorizationError;
+            return $authorizationError['error'];
         }
 
         $path = $request->query('path');
