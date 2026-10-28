@@ -116,6 +116,13 @@ class AttachmentController extends Controller
     {
         $config = $this->supabaseConfig();
 
+        \Log::info('Supabase configuration check', [
+    'url_present' => !empty($config['url']),
+    'key_present' => !empty($config['key']),
+    'bucket_present' => !empty($config['bucket']),
+    'bucket' => $config['bucket'],
+]);
+
         if (! $this->storageConfigured($config)) {
             Log::error(
                 'Supabase attachment configuration is incomplete.',
