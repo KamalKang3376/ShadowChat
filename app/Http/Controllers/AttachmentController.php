@@ -1,15 +1,33 @@
+
 <?php
 
 namespace App\Http\Controllers;
 
 use App\Models\Room;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class AttachmentController extends Controller
 {
+    private const MAX_FILE_SIZE = 10240;
+
+    private const ALLOWED_EXTENSIONS = [
+        'jpg',
+        'jpeg',
+        'png',
+        'gif',
+        'webp',
+        'pdf',
+        'txt',
+        'doc',
+        'docx',
+        'xls',
+        'xlsx',
+    ];
+
     private function supabaseConfig(): array
     {
         return [
@@ -38,17 +56,21 @@ class AttachmentController extends Controller
             ));
     }
 
-    public function upload(Request $request, string $roomCode)
-    {
+    private function authorizeRoom(
+        Request $request,
+        string $roomCode
+    ): ?array {
         $room = Room::where('room_code', $roomCode)
             ->where('status', 'active')
             ->where('expires_at', '>', now())
             ->first();
 
         if (! $room) {
-            return response()->json([
-                'message' => 'Room not found or expired.',
-            ], 404);
+            return [
+                'error' => response()->json([
+                    'message' => 'Room not found or expired.',
+                ], 404),
+            ];
         }
 
         $membership = $request->session()->get(
@@ -60,57 +82,109 @@ class AttachmentController extends Controller
             || empty($membership['uid'])
             || empty($membership['nickname'])
         ) {
-            return response()->json([
-                'message' => 'You are not authorized for this room.',
-            ], 403);
+            return [
+                'error' => response()->json([
+                    'message' => 'You are not authorized for this room.',
+                ], 403),
+            ];
         }
 
+        return null;
+    }
+
+    private function validateAttachment(
+        Request $request
+    ): UploadedFile {
         $validated = $request->validate([
             'file' => [
+                'bail',
                 'required',
                 'file',
-                'max:10240',
-                'mimetypes:image/jpeg,image/png,image/gif,image/webp,application/pdf,text/plain,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'max:' . self::MAX_FILE_SIZE,
+                'mimes:' . implode(',', self::ALLOWED_EXTENSIONS),
             ],
+        ], [
+            'file.required' => 'Please select a file to upload.',
+            'file.file' => 'The uploaded attachment is invalid.',
+            'file.max' => 'The maximum attachment size is 10 MB.',
+            'file.mimes' => 'Unsupported file type. Allowed: JPG, JPEG, PNG, GIF, WebP, PDF, TXT, DOC, DOCX, XLS and XLSX.',
         ]);
 
-        $file = $validated['file'];
+        return $validated['file'];
+    }
+
+    private function getStorageConfig(): ?array
+    {
         $config = $this->supabaseConfig();
 
         if (! $this->storageConfigured($config)) {
-            Log::error('Supabase attachment configuration is incomplete.', [
-                'url_present' => ! empty($config['url']),
-                'secret_key_present' => ! empty($config['key']),
-                'bucket_present' => ! empty($config['bucket']),
-            ]);
+            Log::error(
+                'Supabase attachment configuration is incomplete.',
+                [
+                    'url_present' => ! empty($config['url']),
+                    'secret_key_present' => ! empty($config['key']),
+                    'bucket_present' => ! empty($config['bucket']),
+                ]
+            );
 
+            return null;
+        }
+
+        return $config;
+    }
+
+    public function upload(Request $request, string $roomCode)
+    {
+        $authorizationError = $this->authorizeRoom(
+            $request,
+            $roomCode
+        );
+
+        if ($authorizationError) {
+            return $authorizationError['error'];
+        }
+
+        $file = $this->validateAttachment($request);
+
+        $config = $this->getStorageConfig();
+
+        if (! $config) {
             return response()->json([
                 'message' => 'File storage is not configured.',
             ], 503);
         }
 
-        $extension = strtolower($file->extension());
+        $extension = strtolower($file->guessExtension() ?? '');
 
-        if (! $extension) {
+        if (
+            ! $extension
+            || ! in_array(
+                $extension,
+                self::ALLOWED_EXTENSIONS,
+                true
+            )
+        ) {
             return response()->json([
-                'message' => 'The uploaded file has an unsupported extension.',
+                'message' => 'This file type is not supported.',
             ], 422);
         }
 
-        $path = $roomCode . '/' . Str::uuid() . '.' . $extension;
+        $path = $roomCode . '/' . Str::uuid()
+            . '.' . $extension;
+
+        $mimeType = $file->getMimeType()
+            ?: 'application/octet-stream';
 
         try {
             $response = Http::timeout(30)
                 ->withHeaders([
                     'apikey' => $config['key'],
                     'Authorization' => 'Bearer ' . $config['key'],
-                    'Content-Type' => $file->getMimeType()
-                        ?: 'application/octet-stream',
                     'x-upsert' => 'false',
                 ])
                 ->withBody(
                     file_get_contents($file->getRealPath()),
-                    $file->getMimeType() ?: 'application/octet-stream'
+                    $mimeType
                 )
                 ->post($this->objectUrl($config, $path));
 
@@ -118,7 +192,8 @@ class AttachmentController extends Controller
                 Log::error('Supabase attachment upload failed.', [
                     'status' => $response->status(),
                     'room_code' => $roomCode,
-                    'response' => $response->json() ?? $response->body(),
+                    'response' => $response->json()
+                        ?? $response->body(),
                 ]);
 
                 return response()->json([
@@ -127,10 +202,10 @@ class AttachmentController extends Controller
             }
 
             return response()->json([
-                'message' => 'Attachment uploaded.',
+                'message' => 'Attachment uploaded successfully.',
                 'path' => $path,
                 'name' => $file->getClientOriginalName(),
-                'type' => $file->getMimeType(),
+                'type' => $mimeType,
                 'size' => $file->getSize(),
             ]);
         } catch (\Throwable $e) {
@@ -147,37 +222,29 @@ class AttachmentController extends Controller
 
     public function download(Request $request, string $roomCode)
     {
-        $room = Room::where('room_code', $roomCode)
-            ->where('status', 'active')
-            ->where('expires_at', '>', now())
-            ->first();
-
-        if (! $room) {
-            return response()->json([
-                'message' => 'Room not found or expired.',
-            ], 404);
-        }
-
-        $membership = $request->session()->get(
-            "authorized_rooms.{$roomCode}"
+        $authorizationError = $this->authorizeRoom(
+            $request,
+            $roomCode
         );
 
-        if (
-            ! is_array($membership)
-            || empty($membership['uid'])
-            || empty($membership['nickname'])
-        ) {
-            return response()->json([
-                'message' => 'You are not authorized for this room.',
-            ], 403);
+        if ($authorizationError) {
+            return $authorizationError['error'];
         }
 
         $path = $request->query('path');
 
+        $extensionPattern = implode(
+            '|',
+            self::ALLOWED_EXTENSIONS
+        );
+
         if (
             ! is_string($path)
             || ! preg_match(
-                '/\A' . preg_quote($roomCode, '/') . '\/[a-f0-9-]+\.(jpg|jpeg|png|gif|webp|pdf|txt|doc|docx|xls|xlsx)\z/i',
+                '/\A' . preg_quote($roomCode, '/') .
+                '\/[a-f0-9-]+\.(' .
+                $extensionPattern .
+                ')\z/i',
                 $path
             )
         ) {
@@ -186,15 +253,9 @@ class AttachmentController extends Controller
             ], 400);
         }
 
-        $config = $this->supabaseConfig();
+        $config = $this->getStorageConfig();
 
-        if (! $this->storageConfigured($config)) {
-            Log::error('Supabase attachment configuration is incomplete.', [
-                'url_present' => ! empty($config['url']),
-                'secret_key_present' => ! empty($config['key']),
-                'bucket_present' => ! empty($config['bucket']),
-            ]);
-
+        if (! $config) {
             return response()->json([
                 'message' => 'File storage is not configured.',
             ], 503);
@@ -209,10 +270,13 @@ class AttachmentController extends Controller
                 ->get($this->objectUrl($config, $path));
 
             if (! $response->successful()) {
-                Log::warning('Supabase attachment download failed.', [
-                    'status' => $response->status(),
-                    'room_code' => $roomCode,
-                ]);
+                Log::warning(
+                    'Supabase attachment download failed.',
+                    [
+                        'status' => $response->status(),
+                        'room_code' => $roomCode,
+                    ]
+                );
 
                 return response()->json([
                     'message' => 'Attachment not found or unavailable.',
@@ -227,10 +291,13 @@ class AttachmentController extends Controller
                 'Cache-Control' => 'private, no-store',
             ]);
         } catch (\Throwable $e) {
-            Log::error('Supabase attachment download exception.', [
-                'room_code' => $roomCode,
-                'message' => $e->getMessage(),
-            ]);
+            Log::error(
+                'Supabase attachment download exception.',
+                [
+                    'room_code' => $roomCode,
+                    'message' => $e->getMessage(),
+                ]
+            );
 
             return response()->json([
                 'message' => 'Attachment storage is temporarily unavailable.',
