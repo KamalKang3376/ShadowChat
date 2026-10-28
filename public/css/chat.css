@@ -1,8 +1,9 @@
 
 .chat-page {
-    position: relative;
-    min-height: 100vh;
-    min-height: 100dvh;
+     position: relative;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -278,6 +279,7 @@
     z-index: 10;
     width: 100%;
     flex: 0 0 auto;
+    flex-shrink: 0;
     padding: 0;
     background: rgba(2, 9, 20, 0.88);
     box-sizing: border-box;
@@ -600,5 +602,29 @@
 @media (prefers-reduced-motion: reduce) {
     .send-btn {
         transition: none;
+    }
+}
+
+@media (max-width: 575px) {
+    .chat-page {
+        height: 100vh;
+        height: 100dvh;
+        min-height: 0;
+    }
+
+    .chat-messages {
+        flex: 1 1 auto;
+        min-height: 0;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .chat-composer {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .message-input-wrapper #messageInput {
+        font-size: 16px;
+        scroll-margin-bottom: 12px;
     }
 }
