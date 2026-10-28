@@ -1,11 +1,11 @@
 
 .chat-page {
-     position: relative;
-    height: 100vh;
-    height: 100dvh;
-    min-height: 0;
+    position: relative;
     display: flex;
     flex-direction: column;
+    height: var(--chat-viewport-height, 100vh);
+    height: var(--chat-viewport-height, 100dvh);
+    min-height: 0;
     overflow: hidden;
     background:
         radial-gradient(circle at 50% 90%, rgba(37, 99, 235, 0.22), transparent 32%),
@@ -101,7 +101,7 @@
 .chat-messages {
     position: relative;
     z-index: 2;
-    flex: 1;
+    flex: 1 1 auto;
     width: 100%;
     max-width: 950px;
     min-height: 0;
@@ -112,6 +112,8 @@
     align-items: stretch;
     gap: 12px;
     overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
     box-sizing: border-box;
     scrollbar-width: thin;
     scrollbar-color: rgba(100, 116, 139, 0.35) transparent;
@@ -514,6 +516,12 @@
 }
 
 @media (max-width: 575px) {
+    .chat-page {
+        height: var(--chat-viewport-height, 100vh);
+        height: var(--chat-viewport-height, 100dvh);
+        min-height: 0;
+    }
+
     .chat-header {
         min-height: 65px;
         padding: 0 15px;
@@ -532,6 +540,8 @@
     }
 
     .chat-messages {
+        flex: 1 1 auto;
+        min-height: 0;
         padding: 18px 12px 24px;
         gap: 10px;
     }
@@ -569,7 +579,8 @@
         height: 42px;
         padding-left: 12px;
         padding-right: 42px;
-        font-size: 12px;
+        font-size: 16px;
+        scroll-margin-bottom: 12px;
     }
 
     .emoji-btn {
@@ -597,34 +608,14 @@
     .chat-error {
         width: calc(100% - 24px);
     }
+
+    .chat-composer {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
     .send-btn {
         transition: none;
-    }
-}
-
-@media (max-width: 575px) {
-    .chat-page {
-        height: 100vh;
-        height: 100dvh;
-        min-height: 0;
-    }
-
-    .chat-messages {
-        flex: 1 1 auto;
-        min-height: 0;
-        overscroll-behavior: contain;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    .chat-composer {
-        padding-bottom: env(safe-area-inset-bottom);
-    }
-
-    .message-input-wrapper #messageInput {
-        font-size: 16px;
-        scroll-margin-bottom: 12px;
     }
 }

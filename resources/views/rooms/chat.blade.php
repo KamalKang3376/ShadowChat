@@ -171,6 +171,7 @@
     window.shadowChatNickname = @json($nickname ?? session('nickname', 'Guest'));
 </script>
 
+
 <script type="module" src="{{ asset('js/chat.js') }}"></script>
 
 <script>
@@ -183,4 +184,53 @@
     });
 </script>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const chatPage = document.querySelector('.chat-page');
+        const composer = document.querySelector('.chat-composer');
+        const messageInput = document.getElementById('messageInput');
+
+        if (!chatPage || !composer || !messageInput) {
+            return;
+        }
+
+        const viewport = window.visualViewport;
+
+        function updateChatViewport() {
+            const height = viewport
+                ? viewport.height
+                : window.innerHeight;
+
+            chatPage.style.setProperty(
+                '--chat-viewport-height',
+                `${height}px`
+            );
+        }
+
+        updateChatViewport();
+
+        if (viewport) {
+            viewport.addEventListener('resize', updateChatViewport);
+            viewport.addEventListener('scroll', updateChatViewport);
+        }
+
+        window.addEventListener('resize', updateChatViewport);
+        window.addEventListener('orientationchange', updateChatViewport);
+
+        messageInput.addEventListener('focus', function () {
+            updateChatViewport();
+
+            setTimeout(function () {
+                composer.scrollIntoView({
+                    block: 'end',
+                    behavior: 'auto'
+                });
+
+                updateChatViewport();
+            }, 150);
+        });
+    });
+</script>
+
 @endsection
+
