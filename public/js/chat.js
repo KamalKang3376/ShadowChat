@@ -58,10 +58,16 @@ const attachmentPreview = document.getElementById("attachmentPreview");
 const attachmentName = document.getElementById("attachmentName");
 const removeAttachmentButton = document.getElementById("removeAttachment");
 const chatError = document.getElementById("chatError");
+const replyPreviewElement = document.getElementById("replyPreview");
+const replySenderElement = document.getElementById("replySender");
+const replyTextElement = document.getElementById("replyText");
+const cancelReplyButton = document.getElementById("cancelReply");
 
 let selectedFile = null;
 let sending = false;
 let firebaseReady = false;
+let replyingTo = null;
+let replyPreview = null;
 let presenceRegistered = false;
 let chatStarted = false;
 let presenceListenerStarted = false;
@@ -200,6 +206,38 @@ function insertEmoji(emoji) {
     messageInput.setRangeText(emoji, start, end, "end");
     messageInput.focus();
 }
+
+function startReply(messageId, sender, text) {
+    replyingTo = {
+        id: messageId,
+        sender: sender || "Guest",
+        text: text || "Attachment"
+    };
+
+    if (replySenderElement) {
+        replySenderElement.textContent = replyingTo.sender;
+    }
+
+    if (replyTextElement) {
+        replyTextElement.textContent = replyingTo.text;
+    }
+
+    if (replyPreviewElement) {
+        replyPreviewElement.hidden = false;
+    }
+
+    messageInput?.focus();
+}
+
+function cancelReply() {
+    replyingTo = null;
+
+    if (replyPreviewElement) {
+        replyPreviewElement.hidden = true;
+    }
+}
+
+cancelReplyButton?.addEventListener("click", cancelReply);
 
 
 emojiButton?.addEventListener("click", (event) => {
@@ -542,11 +580,19 @@ function startChat() {
             }
 
             const messageData = {
-                sender: nickname,
-                senderId: sessionId,
-                text,
-                timestamp: serverTimestamp()
-            };
+    sender: nickname,
+    senderId: sessionId,
+    text,
+    timestamp: serverTimestamp()
+};
+
+            if (replyingTo) {
+                messageData.replyTo = {
+                    id: replyingTo.id,
+                    sender: replyingTo.sender,
+                    text: replyingTo.text
+                };
+            }
 
             if (attachment) {
                 messageData.attachment = attachment;
@@ -557,6 +603,7 @@ function startChat() {
             messageInput.value = "";
             clearSelectedAttachment();
             messageInput.focus();
+            cancelReply();
         } catch (error) {
             showError(getFirebaseErrorMessage(error, "Message send failed"));
         } finally {
@@ -599,12 +646,27 @@ function startChat() {
             const messageRow = document.createElement("div");
             messageRow.className = "message-row";
 
+
             messageRow.classList.add(
                 data.senderId === sessionId ? "own-message" : "other-message"
             );
 
             const messageContent = document.createElement("div");
             messageContent.className = "message-bubble";
+
+             if (data.replyTo) {
+                const quotedMessage = document.createElement("div");
+                quotedMessage.className = "message-reply-quote";
+
+                const quotedSender = document.createElement("strong");
+                quotedSender.textContent = data.replyTo.sender || "Guest";
+
+                const quotedText = document.createElement("span");
+                quotedText.textContent = data.replyTo.text || "Attachment";
+
+                quotedMessage.append(quotedSender, quotedText);
+                messageContent.appendChild(quotedMessage);
+            }
 
             const senderElement = document.createElement("div");
             senderElement.className = "message-sender";
@@ -675,11 +737,84 @@ function startChat() {
                 });
             }
 
-            messageContent.appendChild(timeElement);
-            messageRow.appendChild(messageContent);
-            messagesContainer.appendChild(messageRow);
+           
+messageContent.appendChild(timeElement);
 
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+// Reply button for laptop
+const actions = document.createElement("div");
+actions.className = "message-actions";
+
+const replyButton = document.createElement("button");
+replyButton.type = "button";
+replyButton.className = "message-action-btn";
+replyButton.innerHTML = '<i class="fa-solid fa-reply"></i>';
+replyButton.title = "Reply";
+replyButton.setAttribute("aria-label", "Reply");
+
+function replyToThisMessage() {
+    startReply(
+        snapshot.key,
+        data.sender,
+        data.text ||
+            (data.attachment?.name
+                ? `Attachment: ${data.attachment.name}`
+                : "Attachment")
+    );
+}
+
+replyButton.addEventListener("click", replyToThisMessage);
+actions.appendChild(replyButton);
+
+// Attach the Reply button to the message bubble
+messageContent.appendChild(actions);
+
+messageRow.appendChild(messageContent);
+messagesContainer.appendChild(messageRow);
+
+// Mobile swipe right to reply
+
+
+let touchStartX = 0;
+let touchStartY = 0;
+let touchTracking = false;
+
+messageRow.addEventListener("touchstart", (event) => {
+    if (event.touches.length !== 1) {
+        touchTracking = false;
+        return;
+    }
+
+    const touch = event.touches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+    touchTracking = true;
+}, { passive: true });
+
+messageRow.addEventListener("touchend", (event) => {
+    if (!touchTracking || !event.changedTouches.length) return;
+
+    touchTracking = false;
+
+    const touch = event.changedTouches[0];
+    const deltaX = touch.clientX - touchStartX;
+    const deltaY = touch.clientY - touchStartY;
+
+    if (
+        deltaX >= 50 &&
+        deltaX > Math.abs(deltaY) * 1.2
+    ) {
+        replyToThisMessage();
+    }
+}, { passive: true });
+
+messageRow.addEventListener("touchcancel", () => {
+    touchTracking = false;
+}, { passive: true });
+
+messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+
+
         },
         (error) => {
             showError(

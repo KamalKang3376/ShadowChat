@@ -80,6 +80,22 @@
             </button>
         </div>
 
+        <div id="replyPreview" class="reply-preview" hidden>
+    <div class="reply-preview-content">
+        <strong id="replySender"></strong>
+        <span id="replyText"></span>
+    </div>
+
+    <button
+        type="button"
+        id="cancelReply"
+        aria-label="Cancel reply"
+        title="Cancel reply"
+    >
+        <i class="fa-solid fa-xmark"></i>
+    </button>
+</div>
+
         <div class="chat-input-area">
 
             <button

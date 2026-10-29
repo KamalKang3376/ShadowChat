@@ -619,3 +619,140 @@
         transition: none;
     }
 }
+
+.reply-preview {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    margin-bottom: 10px;
+    border-left: 4px solid #c49a55;
+    border-radius: 8px;
+    background: rgba(196, 154, 85, 0.12);
+}
+
+.reply-preview[hidden] {
+    display: none;
+}
+
+.reply-preview-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.reply-preview-content strong {
+    color: #c49a55;
+    font-size: 13px;
+}
+
+.reply-preview-content span {
+    overflow: hidden;
+    color: inherit;
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#cancelReply {
+    border: none;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+/* Message positioning */
+.message-row {
+    position: relative;
+    overflow: visible;
+}
+
+.message-bubble {
+    position: relative;
+    overflow-wrap: anywhere;
+}
+
+/* Compact Reply button beside each message */
+.message-actions {
+    position: absolute;
+    top: 50%;
+    right: -36px;
+    z-index: 20;
+    display: none;
+    align-items: center;
+    transform: translateY(-50%);
+}
+
+.message-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 50%;
+    background: #202936;
+    color: #e9edef;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.message-action-btn:hover {
+    background: #354253;
+}
+
+/* Show Reply on laptop hover */
+@media (hover: hover) and (min-width: 769px) {
+    .message-row:hover .message-actions,
+    .message-row:focus-within .message-actions {
+        display: flex;
+    }
+
+    .own-message .message-actions {
+        right: auto;
+        left: -36px;
+    }
+
+    .other-message .message-actions {
+        right: -36px;
+        left: auto;
+    }
+}
+
+/* Hide the button on mobile; use swipe-to-reply */
+@media (max-width: 768px), (hover: none) {
+    .message-actions {
+        display: none !important;
+    }
+}
+
+/* Quoted message inside a reply */
+.message-reply-quote {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 8px;
+    padding: 8px 10px;
+    border-left: 3px solid #53bdeb;
+    border-radius: 5px;
+    background: rgba(0, 0, 0, 0.16);
+}
+
+.message-reply-quote strong {
+    color: #53bdeb;
+    font-size: 12px;
+}
+
+.message-reply-quote span {
+    color: #e9edef;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+.message-row,
+.message-bubble {
+    touch-action: pan-y;
+}
