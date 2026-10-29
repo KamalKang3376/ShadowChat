@@ -187,6 +187,7 @@ function renderEmojiPicker() {
     });
 }
 
+
 function insertEmoji(emoji) {
     if (!messageInput) return;
 
@@ -195,11 +196,8 @@ function insertEmoji(emoji) {
 
     messageInput.setRangeText(emoji, start, end, "end");
     messageInput.focus();
-
-    if (emojiPicker) {
-        emojiPicker.hidden = true;
-    }
 }
+
 
 emojiButton?.addEventListener("click", (event) => {
     event.stopPropagation();
