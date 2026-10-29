@@ -171,8 +171,8 @@
     window.shadowChatNickname = @json($nickname ?? session('nickname', 'Guest'));
 </script>
 
+<script type="module" src="{{ asset('js/chat.js') }}?v=2"></script>
 
-<script type="module" src="{{ asset('js/chat.js') }}"></script>
 
 <script>
     document.getElementById('closeEmojiPicker')?.addEventListener('click', () => {
