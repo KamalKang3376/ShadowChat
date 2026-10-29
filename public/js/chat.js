@@ -181,7 +181,10 @@ function renderEmojiPicker() {
         button.textContent = emoji;
         button.setAttribute("aria-label", emoji);
 
-        button.addEventListener("click", () => insertEmoji(emoji));
+        button.addEventListener("click", (event) => {
+            event.stopPropagation();
+            insertEmoji(emoji);
+        });
 
         emojiGrid.appendChild(button);
     });
